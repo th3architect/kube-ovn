@@ -6,15 +6,18 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Glory belongs to openvswitch/ovn-kubernetes
 // https://github.com/openvswitch/ovn-kubernetes/blob/master/go-controller/pkg/util/ovs.go
 
 func ovsExec(args ...string) (string, error) {
+	start := time.Now()
 	args = append([]string{"--timeout=30"}, args...)
 	output, err := exec.Command("ovs-vsctl", args...).CombinedOutput()
-
+	elapsed := float64((time.Since(start)) / time.Millisecond)
+	klog.Infof("command ovs-vsctl %s in %vms", strings.Join(args, " "), elapsed)
 	if err != nil {
 		return "", fmt.Errorf("failed to run 'ovs-vsctl %s': %v\n  %q", strings.Join(args, " "), err, output)
 	}
